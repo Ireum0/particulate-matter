@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대기질 상세 | DustRank 스타일</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="location">구미시 원평동</h1>
+            <p class="updated">실시간 대기질 정보</p>
+        </header>
+
+        <section class="aqi-card">
+            <div class="aqi-value good">
+                <span class="label">AQI</span>
+                <span id="aqi-number">42</span>
+            </div>
+            <div class="pollutants">
+                <div class="item">
+                    <span class="sub-label">PM2.5</span>
+                    <span id="pm25">12</span>
+                </div>
+                <div class="item">
+                    <span class="sub-label">PM10</span>
+                    <span id="pm10">25</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-cards">
+            <div class="info-card">
+                <h3>상태</h3>
+                <p id="status-text">좋음</p>
+            </div>
+            <div class="info-card">
+                <h3>권장 행동</h3>
+                <p>야외 활동에 영향 없음</p>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
