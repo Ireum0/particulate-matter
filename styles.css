@@ -1,115 +1,179 @@
-/* 기본 리셋 */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* 전체 레이아웃 */
 body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: #f9f9f9;
-    color: #333;
-    line-height: 1.5;
+  font-family: "Noto Sans KR", sans-serif;
+  background: #f4f6f8;
+  color: #222;
 }
 
+/* ======================
+   헤더
+====================== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px;
+  background: #ffffff;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  width: 36px;
+  height: 36px;
+}
+
+.site-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* ======================
+   네비게이션
+====================== */
+.nav {
+  display: flex;
+  gap: 18px;
+}
+
+.nav a {
+  text-decoration: none;
+  color: #333;
+  font-size: 0.95rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.nav a:hover {
+  background: #e9f0ff;
+  color: #1a4ed8;
+}
+
+/* ======================
+   메인
+====================== */
 .container {
-    max-width: 480px;
-    margin: 2rem auto;
-    padding: 1rem;
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
 }
 
-/* 헤더 */
-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
+/* ======================
+   카드
+====================== */
+.card {
+  background: white;
+  padding: 24px;
+  border-radius: 14px;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
-header .location {
-    font-size: 1.5rem;
-    font-weight: bold;
+.card h2 {
+  margin-bottom: 12px;
+  font-size: 1.25rem;
 }
 
-header .updated {
-    font-size: 0.9rem;
-    color: #666;
+.card p {
+  color: #555;
+  line-height: 1.6;
 }
 
-/* AQI 카드 */
-.aqi-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    margin-bottom: 1.5rem;
-    text-align: center;
+/* ======================
+   보기 선택 버튼 (공통)
+====================== */
+.view-selector,
+.view-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0;
 }
 
-.aqi-value {
-    font-size: 2.6rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: center;
-    align-items: baseline;
-    gap: 0.8rem;
+.view-selector button,
+.view-buttons button {
+  padding: 8px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  background: #e0e0e0;
+  font-size: 0.95rem;
+  transition: 0.2s;
 }
 
-.aqi-value.good {
-    color: #2eb82e; /* 좋은 경우 녹색 */
+.view-selector button.active,
+.view-buttons button.active {
+  background: #1e88e5;
+  color: white;
 }
 
-.aqi-value.moderate {
-    color: #ff9900; /* 보통 */
+/* ======================
+   표 / 그래프 뷰
+====================== */
+.view {
+  display: none;
 }
 
-.aqi-value.bad {
-    color: #e60000; /* 나쁨 */
+.view.active {
+  display: block;
 }
 
-.aqi-value .label {
-    font-size: 1rem;
-    font-weight: 500;
+.hidden {
+  display: none;
 }
 
-.pollutants {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 1rem;
+/* ======================
+   표 (CSV + 원평동 공통)
+====================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
 }
 
-.pollutants .item {
-    font-size: 1rem;
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
 }
 
-.pollutants .item .sub-label {
-    display: block;
-    font-weight: 600;
-    color: #555;
+th {
+  background: #f0f0f0;
 }
 
-/* 상세 정보 카드 */
-.info-cards {
-    display: flex;
-    gap: 1rem;
+/* ======================
+   그래프
+====================== */
+canvas {
+  margin-top: 20px;
+  max-width: 100%;
+  height: 360px;
 }
 
-.info-card {
-    background: #fff;
-    border-radius: 10px;
-    padding: 1rem;
-    flex: 1;
-    text-align: center;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+/* 원평동 그래프 높이 */
+#graphView {
+  min-height: 400px;
 }
 
-.info-card h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0.6rem;
+/* CSV 그래프 높이 */
+#csv-chart-wrapper {
+  min-height: 400px;
 }
 
-.info-card p {
-    font-size: 0.9rem;
-    color: #444;
+/* 비교 그래프 높이 */
+#compare-chart-wrapper {
+  min-height: 400px;
 }
