@@ -1,45 +1,197 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대기질 상세 | DustRank 스타일</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <title>구미고 미세먼지</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1 class="location">구미시 원평동</h1>
-            <p class="updated">실시간 대기질 정보</p>
-        </header>
 
-        <section class="aqi-card">
-            <div class="aqi-value good">
-                <span class="label">AQI</span>
-                <span id="aqi-number">42</span>
-            </div>
-            <div class="pollutants">
-                <div class="item">
-                    <span class="sub-label">PM2.5</span>
-                    <span id="pm25">12</span>
-                </div>
-                <div class="item">
-                    <span class="sub-label">PM10</span>
-                    <span id="pm10">25</span>
-                </div>
-            </div>
-        </section>
+<header class="header">
+  <div class="header-left">
+    <img src="logo.png" alt="로고" class="logo">
+    <span class="site-title">구미고 미세먼지</span>
+  </div>
 
-        <section class="info-cards">
-            <div class="info-card">
-                <h3>상태</h3>
-                <p id="status-text">좋음</p>
-            </div>
-            <div class="info-card">
-                <h3>권장 행동</h3>
-                <p>야외 활동에 영향 없음</p>
-            </div>
-        </section>
+  <nav class="nav">
+    <a href="#csv">구미고 미세먼지</a>
+    <a href="#wonpyeong">원평동 미세먼지</a>
+    <a href="#compare">미세먼지 비교</a>
+    <a href="#info">미세먼지 정보</a>
+    <a href="#quiz">미세먼지 퀴즈</a>
+  </nav>
+</header>
+
+<main class="container">
+
+  <!-- CSV 측정 -->
+  <section id="csv" class="card">
+    <h2>📁 구미고에서 측정한 미세먼지</h2>
+
+    <div class="view-buttons">
+      <button id="csv-table-btn">표</button>
+      <button id="csv-chart-btn">그래프</button>
     </div>
+
+    <!-- 표 -->
+    <table id="csv-table">
+      <thead>
+        <tr>
+          <th>날짜·시간</th>
+          <th>농도 (㎍/㎥)</th>
+        </tr>
+      </thead>
+      <tbody id="csv-table-body"></tbody>
+    </table>
+
+    <!-- 그래프 -->
+    <div id="csv-chart-wrapper" class="hidden">
+      <canvas id="csv-chart"></canvas>
+    </div>
+  </section>
+
+  <!-- ② 원평동 (기존 기능 유지) -->
+  <section id="wonpyeong" class="card">
+    <h2>📍 구미시 원평동 미세먼지</h2>
+    <p>2025년 12월 28일 시간대별 PM10 / PM2.5</p>
+
+    <div class="view-selector">
+      <button id="tableBtn" class="active">표</button>
+      <button id="graphBtn">그래프</button>
+    </div>
+
+    <!-- 표 -->
+    <section id="tableView" class="view active">
+      <table>
+        <thead>
+          <tr>
+            <th>날짜·시간</th>
+            <th>미세먼지 (PM10, ㎍/㎥)</th>
+            <th>초미세먼지 (PM2.5, ㎍/㎥)</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </section>
+
+    <!-- 그래프 -->
+    <section id="graphView" class="view">
+      <canvas id="airChart"></canvas>
+    </section>
+  </section>
+
+  <!-- ③ 비교 -->
+  <section id="compare" class="card">
+    <h2>📊 미세먼지 비교</h2>
+    <p>직접 측정한 데이터와 원평동 공공 데이터의 차이를 시간대별로 비교합니다.</p>
+
+    <div class="view-buttons">
+      <button id="compare-table-btn">표</button>
+      <button id="compare-chart-btn">그래프</button>
+    </div>
+
+    <!-- 표 -->
+    <table id="compare-table">
+      <thead>
+        <tr>
+          <th>시간</th>
+          <th>내 측정값 (㎍/㎥)</th>
+          <th>원평동 PM10 (㎍/㎥)</th>
+          <th>차이 (㎍/㎥)</th>
+        </tr>
+      </thead>
+      <tbody id="compare-table-body"></tbody>
+    </table>
+
+    <!-- 그래프 -->
+    <div id="compare-chart-wrapper" class="hidden">
+      <canvas id="compare-chart"></canvas>
+    </div>
+  </section>
+
+  <!-- ④ 정보 -->
+  <section id="info" class="card">
+    <h2>ℹ 미세먼지 관련 정보</h2>
+    <p>
+      미세먼지는 입자 크기에 따라 PM10과 PM2.5로 구분되며,
+      건강과 환경에 미치는 영향이 다릅니다.
+    </p>
+    
+    <h3 style="margin-top: 20px; margin-bottom: 10px; font-size: 1.1rem;">미세먼지 (PM10) 등급 기준</h3>
+    <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+      <thead>
+        <tr style="background: #f0f0f0;">
+          <th style="padding: 10px; border: 1px solid #ddd;">등급</th>
+          <th style="padding: 10px; border: 1px solid #ddd;">농도 범위 (㎍/㎥)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #4caf50; font-weight: 600;">좋음</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">0 ~ 30</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #2196f3; font-weight: 600;">보통</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">31 ~ 80</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #ff9800; font-weight: 600;">나쁨</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">81 ~ 150</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #f44336; font-weight: 600;">매우나쁨</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">151 이상</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <h3 style="margin-top: 20px; margin-bottom: 10px; font-size: 1.1rem;">초미세먼지 (PM2.5) 등급 기준</h3>
+    <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+      <thead>
+        <tr style="background: #f0f0f0;">
+          <th style="padding: 10px; border: 1px solid #ddd;">등급</th>
+          <th style="padding: 10px; border: 1px solid #ddd;">농도 범위 (㎍/㎥)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #4caf50; font-weight: 600;">좋음</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">0 ~ 15</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #2196f3; font-weight: 600;">보통</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">16 ~ 35</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #ff9800; font-weight: 600;">나쁨</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">36 ~ 75</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd; color: #f44336; font-weight: 600;">매우나쁨</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">76 이상</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+      <h3 style="margin-bottom: 10px; font-size: 1.1rem;">출처</h3>
+      <p style="color: #555; line-height: 1.8;">
+        미세먼지 등급 기준은 환경부 대기환경기준을 따릅니다.<br>
+        <a href="https://www.mcee.go.kr/mamo/web/index.do?menuId=16201" target="_blank" style="color: #1e88e5; text-decoration: none;">환경부 대기환경기준 확인하기</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ⑤ 퀴즈 -->
+  <section id="quiz" class="card">
+    <h2>❓ 미세먼지 퀴즈</h2>
+    <p>미세먼지에 대한 이해도를 간단한 퀴즈로 확인해 보세요.</p>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
 </body>
 </html>
