@@ -1,0 +1,115 @@
+/* 기본 리셋 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 전체 레이아웃 */
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #f9f9f9;
+    color: #333;
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 480px;
+    margin: 2rem auto;
+    padding: 1rem;
+}
+
+/* 헤더 */
+header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+header .location {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+header .updated {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* AQI 카드 */
+.aqi-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.aqi-value {
+    font-size: 2.6rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0.8rem;
+}
+
+.aqi-value.good {
+    color: #2eb82e; /* 좋은 경우 녹색 */
+}
+
+.aqi-value.moderate {
+    color: #ff9900; /* 보통 */
+}
+
+.aqi-value.bad {
+    color: #e60000; /* 나쁨 */
+}
+
+.aqi-value .label {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.pollutants {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 1rem;
+}
+
+.pollutants .item {
+    font-size: 1rem;
+}
+
+.pollutants .item .sub-label {
+    display: block;
+    font-weight: 600;
+    color: #555;
+}
+
+/* 상세 정보 카드 */
+.info-cards {
+    display: flex;
+    gap: 1rem;
+}
+
+.info-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1rem;
+    flex: 1;
+    text-align: center;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+}
+
+.info-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+}
+
+.info-card p {
+    font-size: 0.9rem;
+    color: #444;
+}
