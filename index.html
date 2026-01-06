@@ -16,11 +16,17 @@
   </div>
 
   <nav class="nav">
-    <a href="#csv">구미고 미세먼지</a>
-    <a href="#wonpyeong">원평동 미세먼지</a>
-    <a href="#compare">미세먼지 비교</a>
-    <a href="#info">미세먼지 정보</a>
-    <a href="#quiz">미세먼지 퀴즈</a>
+    <div class="nav-links">
+      <a href="#csv">구미고 미세먼지</a>
+      <a href="#wonpyeong">원평동 미세먼지</a>
+      <a href="#compare">미세먼지 비교</a>
+      <a href="#info">미세먼지 정보</a>
+      <a href="#quiz">미세먼지 퀴즈</a>
+    </div>
+    <button id="mobile-menu-toggle" class="mobile-menu-btn">
+      <span class="hamburger"></span>
+    </button>
+    <button id="theme-toggle" class="theme-btn" title="다크모드 토글">🌙</button>
   </nav>
 </header>
 
@@ -28,7 +34,10 @@
 
   <!-- CSV 측정 -->
   <section id="csv" class="card">
-    <h2>📁 구미고에서 측정한 미세먼지</h2>
+    <h2>📁 구미고에서 측정한 초미세먼지(PM2.5)</h2>
+
+    <!-- 통계 표시 -->
+    <div id="csv-stats" class="stats-display"></div>
 
     <div class="view-buttons">
       <button id="csv-table-btn">표</button>
@@ -40,7 +49,7 @@
       <thead>
         <tr>
           <th>날짜·시간</th>
-          <th>농도 (㎍/㎥)</th>
+          <th>농도</th>
         </tr>
       </thead>
       <tbody id="csv-table-body"></tbody>
@@ -54,8 +63,10 @@
 
   <!-- ② 원평동 (기존 기능 유지) -->
   <section id="wonpyeong" class="card">
-    <h2>📍 구미시 원평동 미세먼지</h2>
-    <p>2025년 12월 28일 시간대별 PM10 / PM2.5</p>
+    <h2>📍 구미시 원평동 미세먼지 <span class="date-info">(2025년 12월 29일 시간대별 PM10 / PM2.5)</span></h2>
+
+    <!-- 통계 표시 -->
+    <div id="wonpyeong-stats" class="stats-display"></div>
 
     <div class="view-selector">
       <button id="tableBtn" class="active">표</button>
@@ -68,8 +79,8 @@
         <thead>
           <tr>
             <th>날짜·시간</th>
-            <th>미세먼지 (PM10, ㎍/㎥)</th>
-            <th>초미세먼지 (PM2.5, ㎍/㎥)</th>
+            <th>미세먼지 (PM10)</th>
+            <th>초미세먼지 (PM2.5)</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -84,21 +95,20 @@
 
   <!-- ③ 비교 -->
   <section id="compare" class="card">
-    <h2>📊 미세먼지 비교</h2>
-    <p>직접 측정한 데이터와 원평동 공공 데이터의 차이를 시간대별로 비교합니다.</p>
+    <h2>📊 초미세먼지(PM2.5) 비교</h2>
+    <p>구미고에서 측정한 초미세먼지와 원평동 공공 데이터의 차이를 시간대별로 비교합니다.</p>
 
     <div class="view-buttons">
       <button id="compare-table-btn">표</button>
       <button id="compare-chart-btn">그래프</button>
     </div>
 
-    <!-- 표 -->
     <table id="compare-table">
       <thead>
         <tr>
           <th>시간</th>
-          <th>내 측정값 (㎍/㎥)</th>
-          <th>원평동 PM10 (㎍/㎥)</th>
+          <th>구미고 측정값</th>
+          <th>원평동 측정값</th>
           <th>차이 (㎍/㎥)</th>
         </tr>
       </thead>
