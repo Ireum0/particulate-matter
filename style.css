@@ -1,3 +1,31 @@
+:root {
+  --bg-color: #f4f6f8;
+  --text-color: #222;
+  --card-bg: #ffffff;
+  --header-bg: #ffffff;
+  --header-text: #222;
+  --border-color: #ddd;
+  --table-header-bg: #f0f0f0;
+  --nav-hover: #e9f0ff;
+  --cell-text: #222;
+  --small-text: #555;
+  --stats-bg: #f0f0f0;
+}
+
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  --card-bg: #2d2d2d;
+  --header-bg: #2d2d2d;
+  --header-text: #ffffff;
+  --border-color: #444;
+  --table-header-bg: #3d3d3d;
+  --nav-hover: #3d3d3d;
+  --cell-text: #e0e0e0;
+  --small-text: #ccc;
+  --stats-bg: #3d3d3d;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -6,8 +34,9 @@
 
 body {
   font-family: "Noto Sans KR", sans-serif;
-  background: #f4f6f8;
-  color: #222;
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 /* ======================
@@ -18,17 +47,146 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 14px 28px;
-  background: #ffffff;
-  border-bottom: 1px solid #ddd;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 10;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* 모바일 햄버거 메뉴 */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.mobile-menu-btn:hover {
+  background: var(--nav-hover);
+}
+
+.hamburger {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--nav-text);
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.hamburger::before,
+.hamburger::after {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--nav-text);
+  position: absolute;
+  transition: all 0.3s;
+}
+
+.hamburger::before {
+  top: -6px;
+}
+
+.hamburger::after {
+  top: 6px;
+}
+
+.mobile-menu-btn.active .hamburger {
+  background: transparent;
+}
+
+.mobile-menu-btn.active .hamburger::before {
+  transform: rotate(45deg);
+  top: 0;
+}
+
+.mobile-menu-btn.active .hamburger::after {
+  transform: rotate(-45deg);
+  top: 0;
+}
+
+.logo {
+  transition: filter 0.3s;
+}
+
+[data-theme="dark"] .logo {
+  filter: brightness(0.8) contrast(1.2); /* 다크모드에서 로고 밝기 조정 */
+}
+
+/* ======================
+   반응형 디자인 (모바일)
+====================== */
+@media (max-width: 768px) {
+  .header {
+    padding: 12px 16px;
+  }
+
+  .site-title {
+    font-size: 1rem;
+  }
+
+  /* 데스크톱 네비게이션 숨김 */
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border-color);
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .nav-links.active {
+    display: flex;
+  }
+
+  /* 모바일 햄버거 메뉴 표시 */
+  .mobile-menu-btn {
+    display: block;
+    order: -1; /* 햄버거 버튼을 맨 앞으로 */
+  }
+
+  .theme-btn {
+    order: 1; /* 테마 버튼을 맨 뒤로 */
+  }
+
+  /* 카드 패딩 조정 */
+  .card {
+    padding: 20px 16px;
+  }
+
+  /* 통계 표시 모바일 최적화 */
+  .stats-display {
+    font-size: 0.85rem;
+    padding: 10px 12px;
+  }
+
+  /* 테이블 반응형 */
+  .nested-table {
+    font-size: 0.9rem;
+  }
+
+  .nested-table th,
+  .nested-table td {
+    padding: 6px 4px;
+  }
 }
 
 .logo {
@@ -39,12 +197,20 @@ body {
 .site-title {
   font-size: 1.4rem;
   font-weight: 700;
+  color: var(--header-text);
+  transition: color 0.3s;
 }
 
 /* ======================
    네비게이션
 ====================== */
 .nav {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.nav-links {
   display: flex;
   gap: 18px;
 }
@@ -59,8 +225,32 @@ body {
 }
 
 .nav a:hover {
-  background: #e9f0ff;
+  background: var(--nav-hover);
   color: #1a4ed8;
+}
+
+/* 다크모드에서 네비게이션 링크 색상 */
+[data-theme="dark"] .nav a {
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .nav a:hover {
+  color: #ffffff;
+}
+
+.theme-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: 0.2s;
+  margin-left: 10px;
+}
+
+.theme-btn:hover {
+  background: var(--nav-hover);
 }
 
 /* ======================
@@ -72,15 +262,35 @@ body {
   padding: 0 20px;
 }
 
+/* 앵커 링크 이동 시 헤더가리지 않도록 */
+section[id] {
+  scroll-margin-top: 80px;
+}
+
+/* ======================
+   통계 표시
+====================== */
+.stats-display {
+  background: var(--stats-bg);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
 /* ======================
    카드
 ====================== */
 .card {
-  background: white;
+  background: var(--card-bg);
   padding: 24px;
   border-radius: 14px;
   margin-bottom: 28px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  transition: background-color 0.3s;
 }
 
 .card h2 {
@@ -88,8 +298,15 @@ body {
   font-size: 1.25rem;
 }
 
+.date-info {
+  font-size: 0.75rem;
+  font-weight: normal;
+  color: var(--small-text);
+  margin-left: 8px;
+}
+
 .card p {
-  color: #555;
+  color: var(--small-text);
   line-height: 1.6;
 }
 
@@ -142,16 +359,78 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
+  table-layout: fixed;
 }
 
 th, td {
   padding: 10px;
   border-bottom: 1px solid #ddd;
   text-align: center;
+  word-wrap: break-word;
 }
 
 th {
-  background: #f0f0f0;
+  background: var(--table-header-bg);
+  transition: background-color 0.3s;
+}
+
+/* 원평동 표 (3열) */
+#tableView table th:nth-child(1),
+#tableView table td:nth-child(1) {
+  width: 40%;
+}
+
+#tableView table th:nth-child(2),
+#tableView table td:nth-child(2) {
+  width: 30%;
+}
+
+#tableView table th:nth-child(3),
+#tableView table td:nth-child(3) {
+  width: 30%;
+}
+
+/* 구미고 표 (2열) */
+#csv-table th:nth-child(1),
+#csv-table td:nth-child(1) {
+  width: 50%;
+}
+
+#csv-table th:nth-child(2),
+#csv-table td:nth-child(2) {
+  width: 50%;
+}
+
+/* 비교 표 (4열) */
+#compare-table th:nth-child(1),
+#compare-table td:nth-child(1) {
+  width: 15%;
+}
+
+#compare-table th:nth-child(2),
+#compare-table td:nth-child(2) {
+  width: 35%;
+}
+
+#compare-table th:nth-child(3),
+#compare-table td:nth-child(3) {
+  width: 35%;
+}
+
+#compare-table th:nth-child(4),
+#compare-table td:nth-child(4) {
+  width: 15%;
+}
+
+/* 정보 섹션 표 (2열) */
+.info-table th:nth-child(1),
+.info-table td:nth-child(1) {
+  width: 35%;
+}
+
+.info-table th:nth-child(2),
+.info-table td:nth-child(2) {
+  width: 65%;
 }
 
 /* ======================
@@ -171,6 +450,151 @@ canvas {
 /* CSV 그래프 높이 */
 #csv-chart-wrapper {
   min-height: 400px;
+}
+
+/* 통계 정보 스타일 */
+.stats-info {
+  background: var(--stats-bg);
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 4px solid #2196f3;
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* 정보 섹션 스타일 */
+#info h2,
+#info h3 {
+  color: var(--text-color);
+  transition: color 0.3s;
+}
+
+/* 정보 섹션 테이블 스타일 */
+.info-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+}
+
+.info-table th,
+.info-table td {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  transition: color 0.3s, border-color 0.3s;
+}
+
+.info-table th {
+  background: var(--table-header-bg);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* 등급별 클래스에 공통 스타일 적용 */
+.grade-good, .grade-normal, .grade-bad, .grade-verybad,
+.range-good, .range-normal, .range-bad, .range-verybad {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* 정보 섹션 등급별 스타일 */
+.grade-good {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.grade-normal {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  font-weight: 600;
+}
+
+.grade-bad {
+  background-color: #fff3e0;
+  color: #ef6c00;
+  font-weight: 600;
+}
+
+.grade-verybad {
+  background-color: #ffebee;
+  color: #c62828;
+  font-weight: 600;
+}
+
+.range-good {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.range-normal {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.range-bad {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.range-verybad {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+/* 다크모드에서 정보 섹션 등급별 스타일 */
+[data-theme="dark"] .grade-good {
+  background-color: #0a2a0a;
+  color: white;
+}
+
+[data-theme="dark"] .grade-normal {
+  background-color: #061b3d;
+  color: white;
+}
+
+[data-theme="dark"] .grade-bad {
+  background-color: #261400;
+  color: white;
+}
+
+[data-theme="dark"] .grade-verybad {
+  background-color: #1f0a0a;
+  color: white;
+}
+
+[data-theme="dark"] .range-good {
+  background-color: #0a2a0a;
+  color: white;
+}
+
+[data-theme="dark"] .range-normal {
+  background-color: #061b3d;
+  color: white;
+}
+
+[data-theme="dark"] .range-bad {
+  background-color: #261400;
+  color: white;
+}
+
+[data-theme="dark"] .range-verybad {
+  background-color: #1f0a0a;
+  color: white;
+}
+
+/* 다크모드에서 기존 인라인 스타일이 있는 셀의 텍스트 색상 (하위 호환성) */
+[data-theme="dark"] td[style*="background-color"]:not(.grade-good):not(.grade-normal):not(.grade-bad):not(.grade-verybad) {
+  color: white !important;
+}
+
+/* 다크모드에서 정보 섹션의 설명 텍스트 색상 */
+[data-theme="dark"] #info p {
+  color: white !important;
+}
+
+[data-theme="dark"] #info .stats-info {
+  color: white !important;
 }
 
 /* 비교 그래프 높이 */
