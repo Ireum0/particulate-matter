@@ -343,9 +343,10 @@ const getCommonChartOptions = () => {
 
   return {
     ...APP_CONFIG.CHART_OPTIONS,
-    // PC 환경에서는 responsive 비활성화하여 그래프 모양 고정
+    // PC 환경에서는 그래프 안정성을 위해 옵션 조정
     responsive: isMobile,
-    maintainAspectRatio: !isMobile
+    maintainAspectRatio: isMobile, // PC에서는 false로 설정하여 자유로운 크기 조정
+    animation: isMobile ? APP_CONFIG.CHART_OPTIONS.animation : false // PC에서는 애니메이션 비활성화
   };
 };
 
@@ -446,6 +447,14 @@ function renderWonpyeongChart() {
     },
     options: {
       ...getCommonChartOptions(),
+
+  // PC 환경에서 차트 안정화를 위한 추가 옵션
+  plugins: {
+    ...getCommonChartOptions().plugins,
+    legend: {
+      display: true
+    }
+  }
       plugins: {
         legend: {
           onClick: (e, item, legend) => {
@@ -475,6 +484,20 @@ function renderWonpyeongChart() {
       }
     }
   });
+
+  // PC 환경에서 차트 안정화를 위해 강제 업데이트
+  const isMobile = window.innerWidth <= 768 && (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  );
+
+  if (!isMobile && DOM.wonpyeong.chart) {
+    // PC에서는 약간의 지연 후 차트 업데이트
+    setTimeout(() => {
+      DOM.wonpyeong.chart.update();
+    }, 100);
+  }
 }
 
 // 원평동 보기 전환
