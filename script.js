@@ -1064,30 +1064,20 @@ function initThemeToggle() {
 function initMobileMenu() {
   const mobileMenuToggle = DOM.mobileMenuToggle;
   const navLinks = document.querySelector('.nav-links');
-  const mobileOverlay = document.getElementById('mobile-overlay');
 
-  if (!mobileMenuToggle || !navLinks || !mobileOverlay) return;
+  if (!mobileMenuToggle || !navLinks) return;
 
   mobileMenuToggle.addEventListener('click', () => {
-    const isActive = navLinks.classList.contains('active');
     navLinks.classList.toggle('active');
     mobileMenuToggle.classList.toggle('active');
-    mobileOverlay.classList.toggle('active');
-
-    // 메뉴 열릴 때 스크롤 방지
-    if (!isActive) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
   });
 
-  // 오버레이 클릭 시 메뉴 닫기
-  mobileOverlay.addEventListener('click', () => {
-    navLinks.classList.remove('active');
-    mobileMenuToggle.classList.remove('active');
-    mobileOverlay.classList.remove('active');
-    document.body.style.overflow = '';
+  // 메뉴 외부 클릭 시 메뉴 닫기
+  document.addEventListener('click', (e) => {
+    if (!mobileMenuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+      navLinks.classList.remove('active');
+      mobileMenuToggle.classList.remove('active');
+    }
   });
 
   // 메뉴 항목 클릭 시 메뉴 닫기
@@ -1095,8 +1085,6 @@ function initMobileMenu() {
     if (e.target.tagName === 'A') {
       navLinks.classList.remove('active');
       mobileMenuToggle.classList.remove('active');
-      mobileOverlay.classList.remove('active');
-      document.body.style.overflow = '';
     }
   });
 
@@ -1105,8 +1093,6 @@ function initMobileMenu() {
     if (e.key === 'Escape' && navLinks.classList.contains('active')) {
       navLinks.classList.remove('active');
       mobileMenuToggle.classList.remove('active');
-      mobileOverlay.classList.remove('active');
-      document.body.style.overflow = '';
     }
   });
 }

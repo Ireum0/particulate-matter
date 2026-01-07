@@ -111,38 +111,30 @@ body {
     font-size: 1rem;
   }
 
-  /* 모바일 오버레이 메뉴 */
+  /* 모바일 오버레이 비활성화 - 드롭다운 방식으로 변경 */
   .mobile-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+    display: none !important;
   }
 
   .mobile-overlay.active {
-    display: block;
+    display: none !important;
   }
 
-  /* 데스크톱 네비게이션 숨김 */
+  /* 모바일 드롭다운 메뉴 */
   .nav-links {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
     background: var(--header-bg);
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
     flex-direction: column;
-    padding: 24px;
-    gap: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    min-width: 280px;
+    padding: 16px 0;
+    gap: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 1001;
+    animation: slideDown 0.3s ease-out;
   }
 
   /* 모바일 뷰 컨테이너 최적화 */
@@ -153,6 +145,17 @@ body {
 
   .nav-links.active {
     display: flex;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* 모바일 메뉴 링크 스타일 */
