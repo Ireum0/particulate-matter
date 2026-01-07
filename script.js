@@ -1093,6 +1093,11 @@ function initMobileMenu() {
     if (e.key === 'Escape' && navLinks.classList.contains('active')) {
       navLinks.classList.remove('active');
       mobileMenuToggle.classList.remove('active');
+<<<<<<< HEAD
+=======
+      mobileOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+>>>>>>> 836d83c5ef7e7987d4e7ce215b0fe0e3ebe82449
     }
   });
 }
