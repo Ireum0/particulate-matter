@@ -1089,13 +1089,13 @@ function initMobileMenu() {
   function openMenu() {
     navLinks.classList.add('active');
     mobileMenuToggle.classList.add('active');
-    console.log("📱 메뉴 열림");
+    console.log("📱 메뉴 열림 - 클래스 상태:", navLinks.className, mobileMenuToggle.className);
   }
 
   function closeMenu() {
     navLinks.classList.remove('active');
     mobileMenuToggle.classList.remove('active');
-    console.log("📱 메뉴 닫힘");
+    console.log("📱 메뉴 닫힘 - 클래스 상태:", navLinks.className, mobileMenuToggle.className);
   }
 
   // 햄버거 버튼 클릭

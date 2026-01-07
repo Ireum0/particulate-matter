@@ -144,7 +144,14 @@ body {
   }
 
   .nav-links.active {
-    display: flex;
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+  }
+
+  .nav-links:not(.active) {
+    display: none !important;
   }
 
   @keyframes slideDown {
