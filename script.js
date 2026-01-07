@@ -70,7 +70,9 @@ const APP_CONFIG = {
     responsive: true,
     maintainAspectRatio: false,
     animation: false,
-    resizeDelay: 200
+    resizeDelay: 200,
+    // PC 환경 감지 및 옵션 설정
+    devicePixelRatio: window.devicePixelRatio || 1
   },
 
   // 등급별 색상 (라이트 모드)
@@ -290,6 +292,29 @@ function toggleView(activeBtn, inactiveBtn, activeView, inactiveView) {
   inactiveBtn.classList.remove("active");
   activeView.classList.add("active");
   inactiveView.classList.remove("active");
+
+  // 모바일 감지
+  const isMobile = window.innerWidth <= 768 && (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  );
+
+  // 모바일에서만 뷰 전환 시 섹션 높이 자동 조정
+  if (isMobile) {
+    Utils.nextFrame(() => {
+      const card = activeView.closest('.card');
+      if (card && activeView.querySelector('canvas')) {
+        card.style.height = 'auto';
+        const newHeight = card.offsetHeight;
+        card.style.height = newHeight + 'px';
+
+        setTimeout(() => {
+          card.style.height = '';
+        }, 300);
+      }
+    });
+  }
 }
 
 // CSV 보기 전환 (hidden 클래스 사용)
@@ -308,7 +333,20 @@ function toggleCSVView(activeBtn, inactiveBtn, activeView, inactiveView) {
 }
 
 // 공통 차트 옵션 (설정 객체에서 가져옴)
-const getCommonChartOptions = () => ({ ...APP_CONFIG.CHART_OPTIONS });
+const getCommonChartOptions = () => {
+  const isMobile = window.innerWidth <= 768 && (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  );
+
+  return {
+    ...APP_CONFIG.CHART_OPTIONS,
+    // PC 환경에서는 responsive 비활성화하여 그래프 모양 고정
+    responsive: isMobile,
+    maintainAspectRatio: !isMobile
+  };
+};
 
 // DOM 객체는 파일 상단에서 이미 초기화됨
 
@@ -372,6 +410,18 @@ function renderWonpyeongChart() {
   if (!ctx) {
     console.error("원평동 차트 요소를 찾을 수 없습니다");
     return;
+  }
+
+  // PC 환경에서는 차트 크기를 강제로 설정
+  const isMobile = window.innerWidth <= 768 && (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  );
+
+  if (!isMobile) {
+    ctx.style.width = '100%';
+    ctx.style.height = '360px';
   }
 
   DOM.wonpyeong.chart = new Chart(ctx, {
@@ -602,6 +652,18 @@ function renderCSVChart() {
     DOM.csv.chart.destroy();
   }
 
+  // PC 환경에서는 차트 크기를 강제로 설정
+  const isMobile = window.innerWidth <= 768 && (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  );
+
+  if (!isMobile) {
+    ctx.style.width = '100%';
+    ctx.style.height = '360px';
+  }
+
   // x축 라벨: 00:00 ~ 23:00
   const labels = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, "0")}:00`);
 
@@ -782,7 +844,7 @@ function renderCompareTable() {
 
 function renderCompareChart() {
   const ctx = document.getElementById("compare-chart");
-  
+
   if (!ctx) {
     console.error("비교 차트 캔버스를 찾을 수 없습니다.");
     return;
@@ -792,6 +854,18 @@ function renderCompareChart() {
   if (DOM.compare.chart) {
     DOM.compare.chart.destroy();
     DOM.compare.chart = null;
+  }
+
+  // PC 환경에서는 차트 크기를 강제로 설정
+  const isMobile = window.innerWidth <= 768 && (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  );
+
+  if (!isMobile) {
+    ctx.style.width = '100%';
+    ctx.style.height = '360px';
   }
 
   if (!csvRawData || csvRawData.length === 0) {
@@ -923,18 +997,18 @@ function init() {
     const isDarkMode = DOM.body.hasAttribute('data-theme') && DOM.body.getAttribute('data-theme') === 'dark';
     console.log("🎨 초기 테마:", isDarkMode ? '다크모드' : '라이트모드');
 
-    // 원평동 데이터 렌더링 (테마 상태 반영)
-renderWonpyeongTable();
+  // 원평동 데이터 렌더링 (테마 상태 반영)
+  renderWonpyeongTable();
 
-    // 버튼 상태 초기화
-    if (DOM.csv.tableBtn) DOM.csv.tableBtn.classList.add("active");
-    if (DOM.compare.tableBtn) DOM.compare.tableBtn.classList.add("active");
+  // 버튼 상태 초기화
+  if (DOM.csv.tableBtn) DOM.csv.tableBtn.classList.add("active");
+  if (DOM.compare.tableBtn) DOM.compare.tableBtn.classList.add("active");
 
-    // CSV 데이터 로딩 및 렌더링
-loadCSV().then(() => {
-  renderCSVTable();
-      renderCompareTable();
-      updateStatsDisplay();
+  // CSV 데이터 로딩 및 렌더링
+  loadCSV().then(() => {
+    renderCSVTable();
+    renderCompareTable();
+    updateStatsDisplay();
       console.log("✅ 대시보드 로딩 완료");
     }).catch(error => {
       console.warn("⚠️ CSV 로딩 실패, 기본 데이터로 진행:", error.message);
@@ -990,21 +1064,30 @@ function initThemeToggle() {
 function initMobileMenu() {
   const mobileMenuToggle = DOM.mobileMenuToggle;
   const navLinks = document.querySelector('.nav-links');
+  const mobileOverlay = document.getElementById('mobile-overlay');
 
-  if (!mobileMenuToggle || !navLinks) return;
+  if (!mobileMenuToggle || !navLinks || !mobileOverlay) return;
 
-  mobileMenuToggle.addEventListener('click', (e) => {
-    e.stopPropagation(); // 이벤트 버블링 방지
+  mobileMenuToggle.addEventListener('click', () => {
+    const isActive = navLinks.classList.contains('active');
     navLinks.classList.toggle('active');
     mobileMenuToggle.classList.toggle('active');
+    mobileOverlay.classList.toggle('active');
+
+    // 메뉴 열릴 때 스크롤 방지
+    if (!isActive) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   });
 
-  // 메뉴 외부 클릭 시 메뉴 닫기
-  document.addEventListener('click', (e) => {
-    if (!mobileMenuToggle.contains(e.target) && !navLinks.contains(e.target)) {
-      navLinks.classList.remove('active');
-      mobileMenuToggle.classList.remove('active');
-    }
+  // 오버레이 클릭 시 메뉴 닫기
+  mobileOverlay.addEventListener('click', () => {
+    navLinks.classList.remove('active');
+    mobileMenuToggle.classList.remove('active');
+    mobileOverlay.classList.remove('active');
+    document.body.style.overflow = '';
   });
 
   // 메뉴 항목 클릭 시 메뉴 닫기
@@ -1012,6 +1095,8 @@ function initMobileMenu() {
     if (e.target.tagName === 'A') {
       navLinks.classList.remove('active');
       mobileMenuToggle.classList.remove('active');
+      mobileOverlay.classList.remove('active');
+      document.body.style.overflow = '';
     }
   });
 
@@ -1020,6 +1105,8 @@ function initMobileMenu() {
     if (e.key === 'Escape' && navLinks.classList.contains('active')) {
       navLinks.classList.remove('active');
       mobileMenuToggle.classList.remove('active');
+      mobileOverlay.classList.remove('active');
+      document.body.style.overflow = '';
     }
   });
 }
