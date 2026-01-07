@@ -58,6 +58,9 @@ const DOM = {
  * 애플리케이션 설정 및 상수
  *************************************************/
 const APP_CONFIG = {
+  // 디버그 모드 (개발 환경에서만 true)
+  DEBUG: location.hostname === 'localhost' || location.hostname === '127.0.0.1',
+
   // 날짜 및 데이터 설정
   WONPYEONG_DATE: "2025년 12월 29일",
 
@@ -241,7 +244,7 @@ function calculateStats(data, key) {
 
 // 통계 정보 표시
 function updateStatsDisplay() {
-  console.log("📊 통계 표시 업데이트 시작");
+  Logger.info("📊 통계 표시 업데이트 시작");
   // CSV 데이터 통계
   if (csvRawData && csvRawData.length > 0) {
     const csvStats = calculateStats(csvRawData, 'value');
@@ -288,6 +291,13 @@ function updateStatsDisplay() {
  * @param {HTMLElement} activeView - 표시할 뷰
  * @param {HTMLElement} inactiveView - 숨길 뷰
  */
+/**
+ * 뷰 전환 함수 (표 ↔ 그래프)
+ * @param {HTMLElement} activeBtn - 활성화할 버튼
+ * @param {HTMLElement} inactiveBtn - 비활성화할 버튼
+ * @param {HTMLElement} activeView - 표시할 뷰
+ * @param {HTMLElement} inactiveView - 숨길 뷰
+ */
 function toggleView(activeBtn, inactiveBtn, activeView, inactiveView) {
   activeBtn.classList.add("active");
   inactiveBtn.classList.remove("active");
@@ -301,18 +311,33 @@ function toggleView(activeBtn, inactiveBtn, activeView, inactiveView) {
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   );
 
-  // 모바일에서만 뷰 전환 시 섹션 높이 자동 조정
+  // 모바일에서만 뷰 전환 시 섹션 높이 자동 조정 (PC에서는 고정)
   if (isMobile) {
     Utils.nextFrame(() => {
       const card = activeView.closest('.card');
-      if (card && activeView.querySelector('canvas')) {
-        card.style.height = 'auto';
-        const newHeight = card.offsetHeight;
-        card.style.height = newHeight + 'px';
+      if (card) {
+        // 그래프 뷰일 때는 더 넉넉한 높이 설정
+        if (activeView.querySelector('canvas')) {
+          card.style.height = 'auto';
+          const contentHeight = card.scrollHeight;
+          const minHeight = 400; // 최소 높이 설정
+          const newHeight = Math.max(contentHeight, minHeight);
+          card.style.height = newHeight + 'px';
 
-        setTimeout(() => {
-          card.style.height = '';
-        }, 300);
+          // 차트 리사이즈 트리거
+          setTimeout(() => {
+            if (window.Chart && activeView.querySelector('canvas').chart) {
+              activeView.querySelector('canvas').chart.resize();
+            }
+            card.style.height = '';
+          }, 350);
+        } else {
+          // 표 뷰일 때는 자연스러운 높이 조정
+          card.style.height = 'auto';
+          setTimeout(() => {
+            card.style.height = '';
+          }, 200);
+        }
       }
     });
   }
@@ -326,12 +351,170 @@ function toggleView(activeBtn, inactiveBtn, activeView, inactiveView) {
  * @param {HTMLElement} activeView - 표시할 뷰
  * @param {HTMLElement} inactiveView - 숨길 뷰
  */
+/**
+ * CSV 뷰 전환 함수
+ * @param {HTMLElement} activeBtn - 활성화할 버튼
+ * @param {HTMLElement} inactiveBtn - 비활성화할 버튼
+ * @param {HTMLElement} activeView - 표시할 뷰
+ * @param {HTMLElement} inactiveView - 숨길 뷰
+ */
 function toggleCSVView(activeBtn, inactiveBtn, activeView, inactiveView) {
   activeBtn.classList.add("active");
   inactiveBtn.classList.remove("active");
   activeView.classList.remove("hidden");
   inactiveView.classList.add("hidden");
 }
+
+// =============================================
+// 유틸리티 함수들
+// =============================================
+
+// 환경 감지 유틸리티
+const Environment = {
+  /**
+   * 모바일 환경인지 감지
+   * @returns {boolean} 모바일 환경 여부
+   */
+  isMobile: function() {
+    return window.innerWidth <= 768 && (
+      'ontouchstart' in window ||
+      navigator.maxTouchPoints > 0 ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    );
+  }
+};
+
+// 로깅 유틸리티 (개발 환경에서만 활성화)
+const Logger = {
+  /**
+   * 정보 로그
+   * @param {...any} args - 로그 메시지
+   */
+  info: function(...args) {
+    if (APP_CONFIG.DEBUG) {
+      console.log(...args);
+    }
+  },
+
+  /**
+   * 에러 로그
+   * @param {...any} args - 에러 메시지
+   */
+  error: function(...args) {
+    console.error(...args);
+  },
+
+  /**
+   * 경고 로그
+   * @param {...any} args - 경고 메시지
+   */
+  warn: function(...args) {
+    if (APP_CONFIG.DEBUG) {
+      console.warn(...args);
+    }
+  }
+};
+
+// 소수점 시간을 HH:MM 형식으로 변환
+function decimalToTime(decimalTime) {
+  const hours = Math.floor(decimalTime);
+  const minutes = Math.round((decimalTime - hours) * 60);
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+// =============================================
+// 차트 관련 공통 함수들
+// =============================================
+
+const ChartUtils = {
+  /**
+   * PC 환경에서 차트 컨테이너 크기 설정
+   * @param {HTMLCanvasElement} canvas - 차트 캔버스 요소
+   */
+  setupContainerForPC: function(canvas) {
+    if (!Environment.isMobile()) {
+      const container = canvas.parentElement;
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = (rect.height * 0.9) + 'px'; // 90% 높이 사용
+      }
+    }
+  },
+
+  /**
+   * 차트 컨테이너 높이 자동 조절
+   * @param {Chart} chart - Chart.js 차트 인스턴스
+   * @param {number} margin - 추가 여백 (기본값: 10px)
+   */
+  adjustContainerHeight: function(chart, margin = 10) {
+    if (!chart || !chart.canvas) return;
+
+    const container = chart.canvas.parentElement;
+    const wrapper = container?.parentElement;
+
+    if (container) {
+      const actualHeight = chart.canvas.offsetHeight || chart.height;
+      const containerHeight = actualHeight + margin;
+
+      container.style.height = containerHeight + 'px';
+
+      // 비교 차트 wrapper 처리
+      if (wrapper && wrapper.id === 'compare-chart-wrapper') {
+        wrapper.style.height = containerHeight + 'px';
+      }
+
+        Logger.info(`📏 차트 컨테이너 높이 조절: ${containerHeight}px`);
+    }
+  },
+
+  /**
+   * PC 환경에서 차트 업데이트 및 컨테이너 조절
+   * @param {Chart} chart - Chart.js 차트 인스턴스
+   */
+  updateChartForPC: function(chart) {
+    if (!chart || Environment.isMobile()) return;
+
+    setTimeout(() => {
+      chart.update();
+      setTimeout(() => {
+        this.adjustContainerHeight(chart);
+        this.initResizeObserver();
+      }, 150);
+    }, 100);
+  },
+
+  /**
+   * 차트 리사이즈 옵저버 초기화
+   */
+  initResizeObserver: function() {
+    if (Environment.isMobile()) return;
+
+    const chartContainers = document.querySelectorAll('.chart-container');
+
+    chartContainers.forEach(container => {
+      const canvas = container.querySelector('canvas');
+      if (canvas && canvas.chart) {
+        // ResizeObserver로 컨테이너 크기 변화 감지
+        const resizeObserver = new ResizeObserver(entries => {
+          entries.forEach(entry => {
+            const { width } = entry.contentRect;
+            canvas.style.width = width + 'px';
+            canvas.style.height = (container.offsetHeight * 0.9) + 'px';
+
+            if (canvas.chart) {
+              canvas.chart.resize();
+              this.adjustContainerHeight(canvas.chart, 5);
+            }
+          });
+        });
+
+        resizeObserver.observe(container);
+        Logger.info('📏 차트 리사이즈 옵저버 활성화됨');
+      }
+    });
+  }
+};
 
 // 공통 차트 옵션 (설정 객체에서 가져옴)
 const getCommonChartOptions = () => {
@@ -341,13 +524,74 @@ const getCommonChartOptions = () => {
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   );
 
-  return {
-    ...APP_CONFIG.CHART_OPTIONS,
-    // PC 환경에서는 그래프 안정성을 위해 옵션 조정
-    responsive: isMobile,
-    maintainAspectRatio: isMobile, // PC에서는 false로 설정하여 자유로운 크기 조정
-    animation: isMobile ? APP_CONFIG.CHART_OPTIONS.animation : false // PC에서는 애니메이션 비활성화
-  };
+  if (isMobile) {
+    // 모바일용 옵션
+    return {
+      ...APP_CONFIG.CHART_OPTIONS,
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false, // 모바일 성능 향상
+      interaction: {
+        mode: 'nearest',
+        intersect: false,
+        ...(APP_CONFIG.CHART_OPTIONS.interaction || {})
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            boxWidth: 12,
+            font: { size: 11 }
+          }
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          titleColor: 'white',
+          bodyColor: 'white',
+          cornerRadius: 6,
+          displayColors: true,
+          ...(APP_CONFIG.CHART_OPTIONS.plugins?.tooltip || {})
+        }
+      }
+    };
+  } else {
+    // PC용 컨테이너 크기 인식 옵션
+    return {
+      ...APP_CONFIG.CHART_OPTIONS,
+      responsive: true, // PC에서도 반응형 활성화
+      maintainAspectRatio: false, // 컨테이너 크기에 맞춤
+      animation: APP_CONFIG.CHART_OPTIONS.animation,
+      // 컨테이너 리사이즈 옵션
+      onResize: (chart, size) => {
+        // 컨테이너 크기에 맞게 자동 조절
+        const container = chart.canvas.parentElement;
+        if (container) {
+          const rect = container.getBoundingClientRect();
+          chart.canvas.style.width = rect.width + 'px';
+          chart.canvas.style.height = rect.height + 'px';
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            boxWidth: 20,
+            font: { size: 12 }
+          }
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          titleColor: 'white',
+          bodyColor: 'white',
+          cornerRadius: 6,
+          displayColors: true,
+          ...(APP_CONFIG.CHART_OPTIONS.plugins?.tooltip || {})
+        }
+      }
+    };
+  }
 };
 
 // DOM 객체는 파일 상단에서 이미 초기화됨
@@ -406,6 +650,9 @@ function renderWonpyeongTable() {
   }).join("");
 }
 
+/**
+ * 원평동 차트 렌더링
+ */
 function renderWonpyeongChart() {
   const ctx = document.getElementById("airChart");
 
@@ -414,17 +661,8 @@ function renderWonpyeongChart() {
     return;
   }
 
-  // PC 환경에서는 차트 크기를 강제로 설정
-  const isMobile = window.innerWidth <= 768 && (
-    'ontouchstart' in window ||
-    navigator.maxTouchPoints > 0 ||
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-  );
-
-  if (!isMobile) {
-    ctx.style.width = '100%';
-    ctx.style.height = '360px';
-  }
+  // PC 환경에서 컨테이너 크기 설정
+  ChartUtils.setupContainerForPC(ctx);
 
   DOM.wonpyeong.chart = new Chart(ctx, {
     type: "line",
@@ -447,16 +685,10 @@ function renderWonpyeongChart() {
     },
     options: {
       ...getCommonChartOptions(),
-
-  // PC 환경에서 차트 안정화를 위한 추가 옵션
-  plugins: {
-    ...getCommonChartOptions().plugins,
-    legend: {
-      display: true
-    }
-  }
       plugins: {
+        ...getCommonChartOptions().plugins,
         legend: {
+          display: true,
           onClick: (e, item, legend) => {
             const chart = legend.chart;
             chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
@@ -485,19 +717,8 @@ function renderWonpyeongChart() {
     }
   });
 
-  // PC 환경에서 차트 안정화를 위해 강제 업데이트
-  const isMobile = window.innerWidth <= 768 && (
-    'ontouchstart' in window ||
-    navigator.maxTouchPoints > 0 ||
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-  );
-
-  if (!isMobile && DOM.wonpyeong.chart) {
-    // PC에서는 약간의 지연 후 차트 업데이트
-    setTimeout(() => {
-      DOM.wonpyeong.chart.update();
-    }, 100);
-  }
+  // PC 환경에서 차트 업데이트 및 컨테이너 조절
+  ChartUtils.updateChartForPC(DOM.wonpyeong.chart);
 }
 
 // 원평동 보기 전환
@@ -546,7 +767,7 @@ function parseCSVText(text) {
       return [];
     }
 
-    console.log(`CSV 파싱 시작: ${rows.length}개 행 발견`);
+    Logger.info(`CSV 파싱 시작: ${rows.length}개 행 발견`);
 
     const parsedData = rows.slice(1) // 헤더 제거
       .map((row, index) => {
@@ -583,7 +804,7 @@ function parseCSVText(text) {
       })
       .filter(d => d !== null);
 
-    console.log(`✅ CSV 파싱 완료: ${parsedData.length}개 유효한 데이터`);
+    Logger.info(`✅ CSV 파싱 완료: ${parsedData.length}개 유효한 데이터`);
     return parsedData;
 
   } catch (error) {
@@ -598,7 +819,7 @@ function parseCSVText(text) {
  */
 async function loadCSV() {
   try {
-    console.log("CSV 파일 로딩 시도...");
+    Logger.info("CSV 파일 로딩 시도...");
   const res = await fetch("particular-matter.csv");
 
     if (!res.ok) {
@@ -618,7 +839,7 @@ async function loadCSV() {
     }
 
     csvRawData = parsed;
-    console.log(`✅ CSV 파일 로드 성공: ${parsed.length}개 데이터`);
+    Logger.info(`✅ CSV 파일 로드 성공: ${parsed.length}개 데이터`);
     return;
 
   } catch (error) {
@@ -630,10 +851,10 @@ async function loadCSV() {
     }
 
     // Fallback: 기본 CSV 데이터
-    console.log("🔄 기본 데이터로 대체합니다");
+    Logger.warn("🔄 기본 데이터로 대체합니다");
     try {
       csvRawData = parseCSVText(APP_CONFIG.DEFAULT_CSV);
-      console.log(`✅ 기본 데이터 로드 성공: ${csvRawData.length}개 데이터`);
+      Logger.info(`✅ 기본 데이터 로드 성공: ${csvRawData.length}개 데이터`);
     } catch (fallbackError) {
       console.error("❌ 기본 데이터도 로드할 수 없습니다:", fallbackError.message);
       csvRawData = [];
@@ -668,6 +889,9 @@ function renderCSVTable() {
   }).join("");
 }
 
+/**
+ * CSV 데이터 차트 렌더링
+ */
 function renderCSVChart() {
   const ctx = document.getElementById("csv-chart");
 
@@ -676,17 +900,8 @@ function renderCSVChart() {
     DOM.csv.chart.destroy();
   }
 
-  // PC 환경에서는 차트 크기를 강제로 설정
-  const isMobile = window.innerWidth <= 768 && (
-    'ontouchstart' in window ||
-    navigator.maxTouchPoints > 0 ||
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-  );
-
-  if (!isMobile) {
-    ctx.style.width = '100%';
-    ctx.style.height = '360px';
-  }
+  // PC 환경에서 컨테이너 크기 설정
+  ChartUtils.setupContainerForPC(ctx);
 
   // x축 라벨: 00:00 ~ 23:00
   const labels = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, "0")}:00`);
@@ -770,6 +985,9 @@ DOM.csv.chartBtn.onclick = () => {
     DOM.csv.chartWrapper,
     DOM.csv.table
   );
+
+  // PC 환경에서 차트 업데이트 및 컨테이너 조절
+  ChartUtils.updateChartForPC(DOM.csv.chart);
 
   if (!DOM.csv.chart) {
     Utils.nextFrame(renderCSVChart);
@@ -866,6 +1084,9 @@ function renderCompareTable() {
   }).join("");
 }
 
+/**
+ * 비교 차트 렌더링
+ */
 function renderCompareChart() {
   const ctx = document.getElementById("compare-chart");
 
@@ -880,17 +1101,8 @@ function renderCompareChart() {
     DOM.compare.chart = null;
   }
 
-  // PC 환경에서는 차트 크기를 강제로 설정
-  const isMobile = window.innerWidth <= 768 && (
-    'ontouchstart' in window ||
-    navigator.maxTouchPoints > 0 ||
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-  );
-
-  if (!isMobile) {
-    ctx.style.width = '100%';
-    ctx.style.height = '360px';
-  }
+  // PC 환경에서 컨테이너 크기 설정
+  ChartUtils.setupContainerForPC(ctx);
 
   if (!csvRawData || csvRawData.length === 0) {
     console.warn("비교할 CSV 데이터가 없습니다.");
@@ -1004,6 +1216,9 @@ DOM.compare.chartBtn.onclick = () => {
     DOM.compare.chartWrapper,
     DOM.compare.table
   );
+  // PC 환경에서 차트 업데이트 및 컨테이너 조절
+  ChartUtils.updateChartForPC(DOM.compare.chart);
+
   // 차트가 숨겨져 있을 때는 렌더링을 지연시킴
   setTimeout(() => {
     Utils.nextFrame(renderCompareChart);
@@ -1013,13 +1228,16 @@ DOM.compare.chartBtn.onclick = () => {
 /*************************************************
  * 초기화
  *************************************************/
+/**
+ * 애플리케이션 초기화
+ */
 function init() {
-  console.log("🚀 미세먼지 대시보드 초기화 중...");
+  Logger.info("🚀 미세먼지 대시보드 초기화 중...");
 
   try {
     // 테마 상태 확인 후 데이터 렌더링
     const isDarkMode = DOM.body.hasAttribute('data-theme') && DOM.body.getAttribute('data-theme') === 'dark';
-    console.log("🎨 초기 테마:", isDarkMode ? '다크모드' : '라이트모드');
+    Logger.info("🎨 초기 테마:", isDarkMode ? '다크모드' : '라이트모드');
 
   // 원평동 데이터 렌더링 (테마 상태 반영)
   renderWonpyeongTable();
@@ -1030,19 +1248,17 @@ function init() {
 
   // CSV 데이터 로딩 및 렌더링
   loadCSV().then(() => {
-    console.log("📊 CSV 데이터 로드 완료, 렌더링 시작...");
+    Logger.info("📊 CSV 데이터 로드 완료, 렌더링 시작...");
     renderCSVTable();
     renderCompareTable();
     updateStatsDisplay();
-    console.log("✅ 대시보드 로딩 완료");
+    Logger.info("✅ 대시보드 로딩 완료");
   }).catch(error => {
-    console.error("❌ 초기화 중 CSV 로드 실패:", error);
-    }).catch(error => {
-      console.warn("⚠️ CSV 로딩 실패, 기본 데이터로 진행:", error.message);
-      renderCSVTable();
-      renderCompareTable();
-      updateStatsDisplay();
-    });
+    Logger.warn("⚠️ CSV 로딩 실패, 기본 데이터로 진행:", error.message);
+    renderCSVTable();
+    renderCompareTable();
+    updateStatsDisplay();
+  });
   } catch (error) {
     console.error("💥 초기화 오류:", error);
   }
@@ -1087,17 +1303,24 @@ function initThemeToggle() {
   });
 }
 
+// =============================================
 // 모바일 메뉴 토글 기능
+// =============================================
 function initMobileMenu() {
+  // PC 환경에서는 모바일 메뉴 초기화 건너뜀
+  if (!Environment.isMobile()) {
+    return;
+  }
+
   const mobileMenuToggle = DOM.mobileMenuToggle;
   const navLinks = document.querySelector('.nav-links');
 
   if (!mobileMenuToggle || !navLinks) {
-    console.warn("모바일 메뉴 요소를 찾을 수 없습니다");
+    Logger.warn("모바일 메뉴 요소를 찾을 수 없습니다");
     return;
   }
 
-  console.log("📱 모바일 메뉴 초기화됨");
+  Logger.info("📱 모바일 메뉴 초기화됨");
 
   // 메뉴 토글 함수
   function toggleMenu() {
@@ -1112,13 +1335,11 @@ function initMobileMenu() {
   function openMenu() {
     navLinks.classList.add('active');
     mobileMenuToggle.classList.add('active');
-    console.log("📱 메뉴 열림 - 클래스 상태:", navLinks.className, mobileMenuToggle.className);
   }
 
   function closeMenu() {
     navLinks.classList.remove('active');
     mobileMenuToggle.classList.remove('active');
-    console.log("📱 메뉴 닫힘 - 클래스 상태:", navLinks.className, mobileMenuToggle.className);
   }
 
   // 햄버거 버튼 클릭
@@ -1128,45 +1349,31 @@ function initMobileMenu() {
     toggleMenu();
   });
 
-  // 메뉴 항목 클릭 시 무조건 닫기
+  // 메뉴 항목 클릭 시 메뉴 닫기 (링크 이동 허용)
   navLinks.addEventListener('click', (e) => {
-    // 이벤트가 메뉴 항목에서 발생했는지 확인
     if (e.target.closest('a')) {
-      e.preventDefault();
       e.stopPropagation();
-      // 약간의 지연 후 닫기 (링크 이동을 위해)
-      setTimeout(() => {
-        closeMenu();
-        console.log("📱 메뉴 항목 클릭으로 닫힘");
-      }, 100);
+      setTimeout(closeMenu, 200); // 링크 이동 후 메뉴 닫기
     }
   });
 
-  // 메뉴 외부 클릭 시 닫기
-  document.addEventListener('click', (e) => {
-    if (navLinks.classList.contains('active')) {
-      if (!mobileMenuToggle.contains(e.target) && !navLinks.contains(e.target)) {
-        closeMenu();
-        console.log("📱 메뉴 외부 클릭으로 닫힘");
-      }
+  // 메뉴 외부 클릭/터치 시 닫기
+  const closeMenuOnOutsideClick = (e) => {
+    if (navLinks.classList.contains('active') &&
+        !mobileMenuToggle.contains(e.target) &&
+        !navLinks.contains(e.target)) {
+      closeMenu();
     }
-  });
+  };
 
-  // 터치 이벤트로 외부 클릭 감지 (모바일용)
-  document.addEventListener('touchstart', (e) => {
-    if (navLinks.classList.contains('active')) {
-      if (!mobileMenuToggle.contains(e.target) && !navLinks.contains(e.target)) {
-        closeMenu();
-        console.log("📱 터치로 메뉴 외부 클릭 감지");
-      }
-    }
-  });
+  document.addEventListener('click', closeMenuOnOutsideClick);
+  document.addEventListener('touchstart', closeMenuOnOutsideClick);
 
   // ESC 키로 메뉴 닫기
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && navLinks.classList.contains('active')) {
       closeMenu();
-      console.log("📱 ESC 키로 메뉴 닫힘");
+      Logger.info("📱 ESC 키로 메뉴 닫힘");
     }
   });
 }

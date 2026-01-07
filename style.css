@@ -266,6 +266,20 @@ body {
     font-weight: 600;
   }
 
+  /* 뷰 버튼 모바일 최적화 */
+  .view-selector,
+  .view-buttons {
+    gap: 6px; /* 버튼 간격 좁히기 */
+    margin-bottom: 12px;
+  }
+
+    .view-selector button,
+    .view-buttons button {
+      padding: 8px 12px; /* 패딩 조정 */
+      font-size: 0.85rem; /* 폰트 크기 조정 */
+      flex: 1; /* 균등 분배 */
+    }
+
   /* 비교 섹션 모바일 최적화 */
   .compare-container {
     display: block; /* 모바일에서는 세로 배치 */
@@ -343,8 +357,9 @@ body {
     }
 
     .chart-container {
-      height: 250px;
+      height: 280px; /* 모바일에서 더 넉넉한 높이 */
       margin: 16px 0;
+      padding: 8px; /* 내부 여백 추가 */
     }
 
     .mobile-overlay .nav-links {
@@ -452,6 +467,23 @@ section[id] {
 }
 
 /* ======================
+   차트 컨테이너 (PC용)
+====================== */
+.chart-container {
+  position: relative;
+  height: 400px; /* PC용 기본 높이 설정 */
+  margin: 20px 0;
+}
+
+/* ======================
+   차트 래퍼 (wrapper)
+====================== */
+#compare-chart-wrapper {
+  height: auto; /* JavaScript에서 동적으로 설정 */
+  overflow: hidden; /* 내용이 넘치지 않도록 */
+}
+
+/* ======================
    카드
 ====================== */
 .card {
@@ -505,6 +537,17 @@ section[id] {
 .view-buttons button.active {
   background: #1e88e5;
   color: white;
+}
+
+/* 다크 모드에서 버튼 텍스트 색상 조정 */
+[data-theme="dark"] .view-selector button,
+[data-theme="dark"] .view-buttons button {
+  color: #333; /* 검은색 텍스트 */
+}
+
+[data-theme="dark"] .view-selector button.active,
+[data-theme="dark"] .view-buttons button.active {
+  color: white; /* 활성화된 버튼은 흰색 유지 */
 }
 
 /* ======================
