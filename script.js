@@ -1076,40 +1076,73 @@ function initMobileMenu() {
 
   console.log("📱 모바일 메뉴 초기화됨");
 
-  mobileMenuToggle.addEventListener('click', (e) => {
-    e.stopPropagation(); // 이벤트 버블링 방지
+  // 메뉴 토글 함수
+  function toggleMenu() {
     const isActive = navLinks.classList.contains('active');
-    navLinks.classList.toggle('active');
-    mobileMenuToggle.classList.toggle('active');
-    console.log(`📱 메뉴 ${isActive ? '닫힘' : '열림'}`);
+    if (isActive) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  }
+
+  function openMenu() {
+    navLinks.classList.add('active');
+    mobileMenuToggle.classList.add('active');
+    console.log("📱 메뉴 열림");
+  }
+
+  function closeMenu() {
+    navLinks.classList.remove('active');
+    mobileMenuToggle.classList.remove('active');
+    console.log("📱 메뉴 닫힘");
+  }
+
+  // 햄버거 버튼 클릭
+  mobileMenuToggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleMenu();
   });
 
-  // 메뉴 외부 클릭 시 메뉴 닫기
+  // 메뉴 항목 클릭 시 무조건 닫기
+  navLinks.addEventListener('click', (e) => {
+    // 이벤트가 메뉴 항목에서 발생했는지 확인
+    if (e.target.closest('a')) {
+      e.preventDefault();
+      e.stopPropagation();
+      // 약간의 지연 후 닫기 (링크 이동을 위해)
+      setTimeout(() => {
+        closeMenu();
+        console.log("📱 메뉴 항목 클릭으로 닫힘");
+      }, 100);
+    }
+  });
+
+  // 메뉴 외부 클릭 시 닫기
   document.addEventListener('click', (e) => {
-    if (!mobileMenuToggle.contains(e.target) && !navLinks.contains(e.target)) {
-      if (navLinks.classList.contains('active')) {
-        navLinks.classList.remove('active');
-        mobileMenuToggle.classList.remove('active');
+    if (navLinks.classList.contains('active')) {
+      if (!mobileMenuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+        closeMenu();
         console.log("📱 메뉴 외부 클릭으로 닫힘");
       }
     }
   });
 
-  // 메뉴 항목 클릭 시 메뉴 닫기 (이벤트 버블링 방지)
-  navLinks.addEventListener('click', (e) => {
-    e.stopPropagation(); // 이벤트 버블링 방지
-    if (e.target.tagName === 'A') {
-      navLinks.classList.remove('active');
-      mobileMenuToggle.classList.remove('active');
-      console.log("📱 메뉴 항목 클릭으로 닫힘");
+  // 터치 이벤트로 외부 클릭 감지 (모바일용)
+  document.addEventListener('touchstart', (e) => {
+    if (navLinks.classList.contains('active')) {
+      if (!mobileMenuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+        closeMenu();
+        console.log("📱 터치로 메뉴 외부 클릭 감지");
+      }
     }
   });
 
   // ESC 키로 메뉴 닫기
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && navLinks.classList.contains('active')) {
-      navLinks.classList.remove('active');
-      mobileMenuToggle.classList.remove('active');
+      closeMenu();
       console.log("📱 ESC 키로 메뉴 닫힘");
     }
   });
